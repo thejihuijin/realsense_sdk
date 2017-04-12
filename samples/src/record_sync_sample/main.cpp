@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) try
         cerr<<"no device detected" << endl;
         return -1;
     }
+    std::cout << "device found" << std::endl;
 
     //each device created from the record enabled context will write the streaming data to the given file
     rs::device* device = context.get_device(0);
@@ -50,9 +51,10 @@ int main(int argc, char* argv[]) try
     //enable required streams
     device->enable_stream(rs::stream::color, 640, 480, rs::format::rgba8, 30);
     device->enable_stream(rs::stream::depth, 640, 480, rs::format::z16, 30);
-    device->enable_stream(rs::stream::fisheye, 640, 480, rs::format::raw8, 30);
+    device->enable_stream(rs::stream::infrared, 640, 480, rs::format::y8, 30);
+    device->enable_stream(rs::stream::infrared2, 640, 480, rs::format::y8, 30);
 
-    vector<rs::stream> streams = { rs::stream::color, rs::stream::depth, rs::stream::fisheye };
+    vector<rs::stream> streams = { rs::stream::color, rs::stream::depth, rs::stream::infrared, rs::stream::infrared2 };
 
     for(auto stream : streams)
     {
@@ -60,10 +62,13 @@ int main(int argc, char* argv[]) try
     }
 
     //enable motion tracking, provides IMU events, mandatory for fisheye stream timestamp sync.
-    enable_motion_tracking(device);
+    //enable_motion_tracking(device);
 
-    device->start(rs::source::all_sources);
+    std:: cout << "starting" << std::endl;
+    // device->start(rs::source::all_sources);
+    device->start();
 
+    std::cout << "started" << std::endl;
     for(auto i = 0; i < number_of_frames; ++i)
     {
         //each available frame will be written to the output file
@@ -74,7 +79,8 @@ int main(int argc, char* argv[]) try
                 std::cout << "stream type: " << stream << ", timestamp: " << device->get_frame_timestamp(stream) << std::endl;
         }
     }
-    device->stop(rs::source::all_sources);
+    device->stop();
+    std::cout << "done" << std::endl;
 
     return 0;
 }
