@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) try
         return -1;
     }
 
-    const int number_of_frames = 200;
+    const int number_of_frames = 400;
     const string output_file(argv[1]);
 
     //create a record enabled context with a given output file
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) try
     rs::device* device = context.get_device(0);
 
     //enable required streams
-    device->enable_stream(rs::stream::color, 640, 480, rs::format::rgba8, 30);
+    device->enable_stream(rs::stream::color, 640, 480, rs::format::rgb8, 30);
     device->enable_stream(rs::stream::depth, 640, 480, rs::format::z16, 30);
     device->enable_stream(rs::stream::infrared, 640, 480, rs::format::y8, 30);
     device->enable_stream(rs::stream::infrared2, 640, 480, rs::format::y8, 30);
@@ -65,12 +65,14 @@ int main(int argc, char* argv[]) try
     //enable_motion_tracking(device);
 
     std:: cout << "starting" << std::endl;
-    // device->start(rs::source::all_sources);
+    //device->pause_record();
+    //device->start(rs::source::all_sources);
     device->start();
 
     std::cout << "started" << std::endl;
     for(auto i = 0; i < number_of_frames; ++i)
     {
+      //if (i==100) device->resume_record();
         //each available frame will be written to the output file
         device->wait_for_frames();
         for(auto stream : streams)
