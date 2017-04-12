@@ -8,6 +8,9 @@
 #include "rs_sdk.h"
 #include "unistd.h"
 
+// Add graphical Display
+#include <GLFW/glfw3.h>
+
 using namespace rs::core;
 using namespace std;
 
@@ -54,19 +57,51 @@ int main(int argc, char* argv[]) try
 
     device->start();
 
+    // Open a GLFW window to display our output
+    glfwInit();
+    GLFWwindow * win = glfwCreateWindow(1280, 960, "librealsense tutorial #2", nullptr, nullptr);
+    glfwMakeContextCurrent(win);
+
     //if theres no more frames the playback device will report that its not streaming
     while(device->is_streaming())
     {
         device->wait_for_frames();
-        for(auto stream : streams)
-        {
-            if(device->is_stream_enabled(stream))
-                std::cout << "stream type: " << stream << ", timestamp: " << device->get_frame_timestamp(stream) << std::endl;
-            auto frame_data = device->get_frame_data(stream);
+        //for(auto stream : streams)
+        //{
+         //   if(device->is_stream_enabled(stream))
+        //std::cout << "stream type: " << stream << ", timestamp: " << device->get_frame_timestamp(stream) << std::endl;
+        //auto frame_data = device->get_frame_data(stream);
 
-            //use the recorded frame...
+        //use the recorded frame...
+        glClear(GL_COLOR_BUFFER_BIT);
+        glPixelZoom(1, -1);
+
+        // Display depth data by linearly mapping depth between 0 and 2 meters to the red channel
+        glRasterPos2f(-1, 1);
+        glPixelTransferf(GL_RED_SCALE, 0xFFFF * device->get_depth_scale() / 2.0f);
+        glDrawPixels(640, 480, GL_RED, GL_UNSIGNED_SHORT, device->get_frame_data(rs::stream::depth));
+        glPixelTransferf(GL_RED_SCALE, 1.0f);
+
+        // Display color image as RGB triples
+        glRasterPos2f(0, 1);
+        glDrawPixels(640, 480, GL_RGB, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::color));
+
+        // Display infrared image by mapping IR intensity to visible luminance
+        glRasterPos2f(-1, 0);
+        glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::infrared));
+
+        // Display second infrared image by mapping IR intensity to visible luminance
+        if(device->is_stream_enabled(rs::stream::infrared2))
+        {
+          glRasterPos2f(0, 0);
+          glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::infrared2));
         }
+
+        glfwSwapBuffers(win);
+
+        //}
     }
+    glfwSetWindowShouldClose(win, GL_TRUE);
     device->stop();
 
     return 0;
@@ -74,6 +109,6 @@ int main(int argc, char* argv[]) try
 
 catch(rs::error e)
 {
-    std::cout << e.what() << std::endl;
-    return -1;
+  std::cout << e.what() << std::endl;
+  return -1;
 }
