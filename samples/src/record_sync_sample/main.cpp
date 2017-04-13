@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) try
         return -1;
     }
 
-    const int number_of_frames = 400;
+    const int number_of_frames = 500;
     const string output_file(argv[1]);
 
     //create a record enabled context with a given output file
@@ -49,12 +49,16 @@ int main(int argc, char* argv[]) try
     rs::device* device = context.get_device(0);
 
     //enable required streams
+    vector<rs::stream> streams = { rs::stream::color, rs::stream::depth, rs::stream::infrared  };
+
     device->enable_stream(rs::stream::color, 640, 480, rs::format::rgb8, 30);
     device->enable_stream(rs::stream::depth, 640, 480, rs::format::z16, 30);
     device->enable_stream(rs::stream::infrared, 640, 480, rs::format::y8, 30);
-    device->enable_stream(rs::stream::infrared2, 640, 480, rs::format::y8, 30);
+    if (device->supports((rs::capabilities) rs::stream::infrared2)) {
+      device->enable_stream(rs::stream::infrared2, 640, 480, rs::format::y8, 30);
+      streams.push_back(rs::stream::infrared2);
+    }
 
-    vector<rs::stream> streams = { rs::stream::color, rs::stream::depth, rs::stream::infrared, rs::stream::infrared2 };
 
     for(auto stream : streams)
     {
