@@ -68,12 +68,16 @@ int main(int argc, char* argv[]) try
     rs::record::device* device = context.get_record_device(0);
 
     //enable required streams
+    vector<rs::stream> streams = { rs::stream::color, rs::stream::depth, rs::stream::infrared  };
+
     device->enable_stream(rs::stream::color, 640, 480, rs::format::rgb8, 30);
     device->enable_stream(rs::stream::depth, 640, 480, rs::format::z16, 30);
     device->enable_stream(rs::stream::infrared, 640, 480, rs::format::y8, 30);
-    device->enable_stream(rs::stream::infrared2, 640, 480, rs::format::y8, 30);
+    if (device->supports((rs::capabilities) rs::stream::infrared2)) {
+      device->enable_stream(rs::stream::infrared2, 640, 480, rs::format::y8, 30);
+      streams.push_back(rs::stream::infrared2);
+    }
 
-    vector<rs::stream> streams = { rs::stream::color, rs::stream::depth, rs::stream::infrared, rs::stream::infrared2 };
 
     for(auto stream : streams)
     {
@@ -107,27 +111,27 @@ int main(int argc, char* argv[]) try
       //glClear(GL_COLOR_BUFFER_BIT);
       //glPixelZoom(1, -1);
 
-      /*/ Display depth data by linearly mapping depth between 0 and 2 meters to the red channel
-      glRasterPos2f(-1, 1);
-      glPixelTransferf(GL_RED_SCALE, 0xFFFF * device->get_depth_scale() / 2.0f);
-      glDrawPixels(640, 480, GL_RED, GL_UNSIGNED_SHORT, device->get_frame_data(rs::stream::depth));
-      glPixelTransferf(GL_RED_SCALE, 1.0f);
+      // Display depth data by linearly mapping depth between 0 and 2 meters to the red channel
+      //glRasterPos2f(-1, 1);
+      //glPixelTransferf(GL_RED_SCALE, 0xFFFF * device->get_depth_scale() / 2.0f);
+      //glDrawPixels(640, 480, GL_RED, GL_UNSIGNED_SHORT, device->get_frame_data(rs::stream::depth));
+      //glPixelTransferf(GL_RED_SCALE, 1.0f);
 
       // Display color image as RGB triples
-      glRasterPos2f(0, 1);
+      //glRasterPos2f(0, 1);
       glDrawPixels(640, 480, GL_RGB, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::color));
 
       // Display infrared image by mapping IR intensity to visible luminance
-      glRasterPos2f(-1, 0);
-      glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::infrared));
-      */
+      //glRasterPos2f(-1, 0);
+      //glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::infrared));
+      
 
       // Display second infrared image by mapping IR intensity to visible luminance
-      if(device->is_stream_enabled(rs::stream::infrared2))
-      {
+      //if(device->is_stream_enabled(rs::stream::infrared2))
+      //{
         //glRasterPos2f(0, 0);
-        glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::infrared2));
-      }
+      //  glDrawPixels(640, 480, GL_LUMINANCE, GL_UNSIGNED_BYTE, device->get_frame_data(rs::stream::infrared2));
+     // }
 
       glfwSwapBuffers(win);
       glfwPollEvents();
