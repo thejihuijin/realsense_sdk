@@ -11,8 +11,13 @@
 // Add graphical Display
 #include <GLFW/glfw3.h>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <boost/filesystem.hpp>
+
 using namespace rs::core;
 using namespace std;
+namespace fs = boost::filesystem;
 
 int main(int argc, char* argv[]) try
 {
@@ -27,6 +32,9 @@ int main(int argc, char* argv[]) try
         return -1;
     }
     const string input_file(argv[1]);
+
+    // lazy "flag check"
+    bool extract = argc > 2;
 
     //create a playback enabled context with a given output file
     rs::playback::context context(input_file.c_str());
@@ -61,6 +69,20 @@ int main(int argc, char* argv[]) try
     glfwInit();
     GLFWwindow * win = glfwCreateWindow(1280, 960, "librealsense tutorial #2", nullptr, nullptr);
     glfwMakeContextCurrent(win);
+
+    std::string outname = "./out";
+    // create output directory
+    if (extract) {
+      // Generate output directory name
+      int outnum = 0;
+      //std::cout << fs::exists("./out") << std::endl;
+      while (fs::exists(fs::path(outname + std::to_string(outnum)))) outnum++;
+      std::cout << "Output directory num: " << outnum << std::endl;
+      outname += std::to_string(outnum)+"/";
+      fs::create_directory(outname);
+
+    }
+    int framenum = 0;
 
     //if theres no more frames the playback device will report that its not streaming
     while(device->is_streaming())
@@ -98,6 +120,21 @@ int main(int argc, char* argv[]) try
         }
 
         glfwSwapBuffers(win);
+        if (extract) {
+          //depthimg = cv::Mat(480,640,CV_16UC1, (uint16_t *) depth_frame);
+          const uint16_t * depth_frame =  reinterpret_cast< const uint16_t *>(device->get_frame_data(rs::stream::depth));
+          cv::imwrite(outname + "depth"+std::to_string(framenum)+".png", cv::Mat(480,640,CV_16UC1, (uint16_t *) depth_frame));
+          //std::cout << "Writing depth image with depth scale: " << device->get_depth_scale() << std::endl;
+          //cv::imwrite("test.png", cv::Mat(480,640,CV_16UC1,  depth_frame));
+          const uint8_t * left_frame = reinterpret_cast<const uint8_t *> (device->get_frame_data(rs::stream::infrared));
+          cv::imwrite(outname + "left" + std::to_string(framenum) + ".png", cv::Mat(480,640,CV_8UC1,(uint8_t *) left_frame));
+          const uint8_t * right_frame = reinterpret_cast<const uint8_t *> (device->get_frame_data(rs::stream::infrared2));
+          cv::imwrite(outname + "right" + std::to_string(framenum) +" .png", cv::Mat(480,640,CV_8UC1,(uint8_t *) right_frame));
+          const uint8_t * color_frame = reinterpret_cast<const uint8_t *> (device->get_frame_data(rs::stream::color));
+          cv::imwrite(outname + "color" + std::to_string(framenum) +" .png", cv::Mat(480,640,CV_8UC3,(uint8_t *) color_frame));
+
+        }
+        framenum++;
 
         //}
     }

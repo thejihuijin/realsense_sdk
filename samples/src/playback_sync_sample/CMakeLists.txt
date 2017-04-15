@@ -30,6 +30,23 @@ set(DEPENDENCIES ${OPENGL_LIBRARIES})
   list(APPEND DEPENDENCIES m ${GLFW_LIBRARIES} ${LIBUSB1_LIBRARIES})
   include_directories(${GLFW_INCLUDE_DIR})
 
+# Opencv
+#message("OPen CV dir: ${OpenCV_DIR}")
+#set(OpenCV_DIR "/usr/local/lib")
+#message("OPen CV dir: ${OpenCV_DIR}")
+#find_package(OpenCV REQUIRED)
+set(OpenCV_INCLUDE_DIRS "/usr/local/include/opencv;/usr/local/include")
+set(OpenCV_LIBS "opencv_viz;opencv_videostab;opencv_videoio;opencv_video;opencv_superres;opencv_stitching;opencv_shape;opencv_photo;opencv_objdetect;opencv_ml;opencv_imgproc;opencv_imgcodecs;opencv_highgui;opencv_flann;opencv_features2d;opencv_core;opencv_calib3d")
+include_directories(${OpenCV_INCLUDE_DIRS})
+list(APPEND DEPENDENCIES ${OpenCV_LIBS})
+
+# Boost
+find_package( Boost REQUIRED COMPONENTS filesystem system )
+include_directories(${Boost_INCLUDE_DIRS})
+list(APPEND DEPENDENCIES ${Boost_LIBRARIES})
+
+
+
 
 add_executable(${PROJECT_NAME} main.cpp)
 
