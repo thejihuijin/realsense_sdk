@@ -34,10 +34,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         current_session = end_recording;
         break;
       case GLFW_KEY_SPACE:
-        std::cout << "space" << std::endl;
-        if (current_session == stream_only)
-          current_session = start_recording;
-        else if (current_session == recording) 
+        //std::cout << "space" << std::endl;
+        //if (current_session == stream_only)
+        //  current_session = start_recording;
+        if (current_session == recording) 
           current_session = end_recording;
         break;
       default:
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) try
     //create a record file
     std::string filename = timestamp() + ".rs";
     rs::record::context context(filename.c_str());
-    current_session = stream_only;
+    current_session = recording;//stream_only;
     int number_of_frames = 300;
 
     if(context.get_device_count() == 0)
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) try
     }
 
     std:: cout << "starting new session" << std::endl;
-    device->pause_record();
+    //device->pause_record();
     // device->start(rs::source::all_sources);
     device->start();
 
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) try
         // space key pressed, beginning recording
         std::cout << "Beginning record" << std::endl;
         current_session = recording;
-        device->resume_record();
+        //device->resume_record();
       } else if (current_session == end_recording) {
         std::cout << "Ending record" << std::endl;
         glfwSetWindowShouldClose(win, GL_TRUE);
